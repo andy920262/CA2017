@@ -27,8 +27,8 @@ end
 
 // Write Data   
 always@(posedge clk_i) begin
-    if(RegWrite_i)
-        register[RDaddr_i] = RDdata_i;
+    if(MemWrite_i)
+        mem[Address_i] = WriteData_i;
 end
    
 endmodule 
