@@ -5,7 +5,7 @@ module TestBench;
 reg                Clk;
 reg                Reset;
 reg                Start;
-integer            i, outfile, counter;
+integer            i, outfile, counter, stall, flush;
 
 always #(`CYCLE_TIME/2) Clk = ~Clk;    
 
@@ -38,6 +38,8 @@ initial begin
     Clk = 0;
     Reset = 0;
     Start = 0;
+    stall = 0;
+    flush = 0;
     
     #(`CYCLE_TIME/4) 
     Reset = 1;
@@ -50,6 +52,7 @@ always@(posedge Clk) begin
     if(counter == 30)    // stop after 30 cycles
         $stop;
         
+    $fdisplay(outfile, "cycle = %d, Start = %d, Stall = %d, Flush = %d", counter, Start, stall, flush);
     // print PC
     $fdisplay(outfile, "PC = %d", CPU.PC.pc_o);
     
@@ -65,7 +68,10 @@ always@(posedge Clk) begin
     $fdisplay(outfile, "R7(a3) = %d, R15(t7) = %d, R23(s7) = %d, R31(ra) = %d", CPU.Registers.register[7], CPU.Registers.register[15], CPU.Registers.register[23], CPU.Registers.register[31]);
     
     $fdisplay(outfile, "\n");
-    
+    if (CPU.hazard)
+        stall = stall + 1;
+    if (CPU.flush)
+        flush = flush + 1;
     counter = counter + 1;
 end
 
