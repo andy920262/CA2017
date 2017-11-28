@@ -3,14 +3,14 @@ module IF_ID
     clk_i,
     pc_i,
     inst_i,
-    harzard_i,
+    hazard_i,
     flush_i,
     pc_o,
     inst_o
 );
 
 input       [31:0]  pc_i, inst_i;
-input               clk_i, harzard_i, flush_i;
+input               clk_i, hazard_i, flush_i;
 output  reg [31:0]  pc_o, init_o;
 
 initial begin
@@ -23,7 +23,7 @@ always @(posedge clk_i) begin
         pc_o <= 0;
         inst_o <= 0;
     end
-    else if (harzard_i) begin
+    else if (hazard_i) begin
         pc_o <= pc_i;
         inst_o <= inst_i;
     end
