@@ -1,7 +1,7 @@
 module Memory
 (
     clk_i,
-    Address_i.
+    Address_i,
     WriteData_i,
     MemWrite_i,
     MemRead_i,
