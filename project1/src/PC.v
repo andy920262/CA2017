@@ -3,7 +3,7 @@ module PC
     clk_i,
     rst_i,
     start_i,
-    hazard_i
+    hazard_i,
     pc_i,
     pc_o
 );

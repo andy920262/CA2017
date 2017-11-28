@@ -23,22 +23,22 @@ assign { RegDst_o, ALUSrc_o, MemtoReg, RegWrite_o,
 always @(*) begin
 	case (Op_i)
 		6'b000000: begin // r-type
-			tmp = 10'b1001000000 
+			tmp = 10'b1001000000;
 		end
 		6'b001000: begin // addi
-			tmp = 10'b0101000001
+			tmp = 10'b0101000001;
 		end
 		6'b100011: begin // lw
-			tmp = 10'b0111010001
+			tmp = 10'b0111010001;
 		end
 		6'b101011: begin // sw
-			tmp = 10'bx1x01x0001
+			tmp = 10'bx1x01x0001;
 		end
 		6'b000100: begin // beq
-			tmp = 10'bx0x00x1010
+			tmp = 10'bx0x00x1010;
 		end
 		6'b000010: begin // jump
-			tmp = 10'bxxx00x01xx
+			tmp = 10'bxxx00x01xx;
 		end
 	endcase
 end
