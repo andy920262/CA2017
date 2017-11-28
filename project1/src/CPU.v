@@ -21,8 +21,9 @@ wire        ctrl_MemWrite;
 wire        ctrl_Branch;
 wire        ctrl_Jump;
 wire        ctrl_ExtOp;
-wire        harzard, flush;
-
+wire        hazard, flush;
+wire        Jump_or_next, Branch_or_next, ctrl_or_nop;
+wire        Eq_o;
 wire [31:0] read_data1, read_data2;
 wire [31:0] next_pc, now_pc, IFID_pc;
 wire [4:0]  post_M5;
@@ -33,6 +34,7 @@ wire        zero;
 wire [31:0] always_zero;
 
 assign always_zero = 0;
+assign flush = (Eq_o && ctrl_Branch) || ctrl_Jump;
 
 Adder Add_PC(
     .data1_in   (now_pc),
@@ -62,8 +64,8 @@ PC PC(
     .clk_i      (clk_i),
     .rst_i      (rst_i),
     .start_i    (start_i),
-    .hazard_i   (harzard),
-    .pc_i       (next_pc),
+    .hazard_i   (hazard),
+    .pc_i       (Jump_or_next),
     .pc_o       (now_pc)
 );
 
@@ -78,27 +80,67 @@ Adder Add_Branch(
     .data_o     (Branch_addr)
 );
 
-MUX32 Mux_Harzard_Control(
-    .data1_i    (),
-    .data2_i    (always_zero),
-    .select_i   (harzard),
-    .data_o     ()
+MUX32 Mux_Branch(
+    .data1_i    (next_pc),
+    .data2_i    (Branch_addr),
+    .select_i   (Eq_o && ctrl_Branch),
+    .data_o     (Branch_or_next)
 );
 
+MUX32 Mux_Jump(
+    .data1_i    (Branch_or_next),
+    .data2_i    ({Branch_or_next[31:28], IFID_inst[25:0], 2'b00}),
+    .select_i   (ctrl_Jump),
+    .data_o     (Jump_or_next)
+);
 
 IF_ID IF_ID(
     .clk_i      (clk_i),
     .pc_i       (next_pc),
     .inst_i     (IM_inst),
-    .harzard_i  (harzard),
+    .hazard_i   (hazard),
     .flush_i    (flush),
     .pc_o       (IFID_pc),
     .inst_o     (IFID_inst)
 );
 
+//
+MUX32 Mux_Harzard_Control(
+    .data1_i    ({}),
+    .data2_i    (always_zero),
+    .select_i   (hazard),
+    .data_o     (ctrl_or_nop)
+);
 
-
-
+Eq Eq(
+    .in1        (read_data1),
+    .in2        (read_data2),
+    .out        (Eq_o)
+);
+//
+Hazard Hazard(
+    ID_EX_MemRead_i   (),
+    ID_EX_RdAddr_i    (),
+    IF_ID_inst_i(IFID_inst),
+    hazard_o    (hazard)
+);
+//
+ID_EX ID_EX(
+    .WB_i       (ctrl_or_nop),
+    .M_i        (ctrl_or_nop),
+    .EX_i       (ctrl_or_nop),
+    .data1_i    (read_data1),
+    .data2_i    (read_data2),
+    .ext_i      (extended),
+    .inst_i     (IFID_inst[25:11]),
+    .WB_o       (IDEX_wb),
+    .M_i        (IDEX_m),
+    .EX_i       (IDEX_ex),
+    .data1_o    (IDEX_d1),
+    .data2_o    (IDEX_d2),
+    .ext_o      (IDEX_ext),
+    .inst_o     (IDEX_inst)
+);
 
 Registers Registers(
     .clk_i      (clk_i),
