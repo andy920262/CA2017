@@ -25,7 +25,7 @@ always @(*) begin
 				6'b011000:	tmp = 3'd4; // multiply
 			endcase
 		2'b10: // beq
-			tmp = 3'd3
+			tmp = 3'd3;
 	endcase
 end
 
