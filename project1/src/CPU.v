@@ -31,17 +31,27 @@ wire [31:0] ALU_o;
 wire        zero;
 wire [31:0] always_zero;
 
+assign always_zero = 0;
+
 Control Control(
     .Op_i       (IFID_inst[31:26]),
+
     .RegDst_o   (ctrl_RegDst),
     .ALUOp_o    (ctrl_ALUOp),
     .ALUSrc_o   (ctrl_ALUSrc),
+    .MemWrite_o (ctrl_MemWrite),
     .RegWrite_o (ctrl_RegWrite),
     .MemtoReg_o (ctrl_MemtoReg),
-    .MemWrite_o (ctrl_MemWrite),
     .Branch_o   (ctrl_Branch),
     .Jump_o     (ctrl_Jump),
     .ExtOp_o    (ctrl_ExtOp)
+);
+
+MUX32 Mux_Harzard_Control(
+    .data1_i    ({}),
+    .data2_i    (always_zero),
+    .select_i   (harzard),
+    .data_o     ()
 );
 
 Adder Add_PC(
