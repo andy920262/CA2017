@@ -27,7 +27,7 @@ always @(*) begin
         forwardA_o = 2'b01;
     end
     else begin
-        forwardA_o = 2'b00
+        forwardA_o = 2'b00;
     end
     if (EX_MEM_RegWrite_i &&
         EX_MEM_RegRd_i != 32'b0 &&
