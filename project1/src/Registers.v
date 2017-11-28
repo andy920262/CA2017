@@ -22,15 +22,19 @@ output  [31:0]      RTdata_o;
 
 // Register File
 reg     [31:0]      register        [0:31];
+reg     [31:0]      RSdata_o;
+reg     [31:0]      RTdata_o;
 
 // Read Data      
-assign  RSdata_o = register[RSaddr_i];
-assign  RTdata_o = register[RTaddr_i];
+always@(negedge clk_i) begin
+    RSdata_o = register[RSaddr_i];
+    RTdata_o = register[RTaddr_i];
+end
 
 // Write Data   
 always@(posedge clk_i) begin
-    if(RegWrite_i)
-        register[RDaddr_i] <= RDdata_i;
+  if(RegWrite_i)
+    register[RDaddr_i] = RDdata_i;
 end
    
 endmodule 
