@@ -10,7 +10,8 @@ input               clk_i;
 input               rst_i;
 input               start_i;
 
-wire [31:0] inst_addr, IM_inst, IFID_inst, extended;
+wire [31:0] IM_inst, IFID_inst, extended;
+wire [31:0] Branch_addr;
 wire        ctrl_RegDst;
 wire        ctrl_ALUSrc;
 wire        ctrl_RegWrite;
@@ -33,27 +34,6 @@ wire [31:0] always_zero;
 
 assign always_zero = 0;
 
-Control Control(
-    .Op_i       (IFID_inst[31:26]),
-
-    .RegDst_o   (ctrl_RegDst),
-    .ALUOp_o    (ctrl_ALUOp),
-    .ALUSrc_o   (ctrl_ALUSrc),
-    .MemWrite_o (ctrl_MemWrite),
-    .RegWrite_o (ctrl_RegWrite),
-    .MemtoReg_o (ctrl_MemtoReg),
-    .Branch_o   (ctrl_Branch),
-    .Jump_o     (ctrl_Jump),
-    .ExtOp_o    (ctrl_ExtOp)
-);
-
-MUX32 Mux_Harzard_Control(
-    .data1_i    ({}),
-    .data2_i    (always_zero),
-    .select_i   (harzard),
-    .data_o     ()
-);
-
 Adder Add_PC(
     .data1_in   (now_pc),
     .data2_in   (32'd4),
@@ -65,14 +45,17 @@ Instruction_Memory Instruction_Memory(
     .instr_o    (IM_inst)
 );
 
-IF_ID IF_ID(
-    .clk_i      (clk_i),
-    .pc_i       (next_pc),
-    .inst_i     (IM_inst),
-    .harzard_i  (harzard),
-    .flush_i    (flush),
-    .pc_o       (IFID_pc),
-    .inst_o     (IFID_inst)
+Control Control(
+    .Op_i       (IFID_inst[31:26]),
+    .RegDst_o   (ctrl_RegDst),
+    .ALUOp_o    (ctrl_ALUOp),
+    .ALUSrc_o   (ctrl_ALUSrc),
+    .MemWrite_o (ctrl_MemWrite),
+    .RegWrite_o (ctrl_RegWrite),
+    .MemtoReg_o (ctrl_MemtoReg),
+    .Branch_o   (ctrl_Branch),
+    .Jump_o     (ctrl_Jump),
+    .ExtOp_o    (ctrl_ExtOp)
 );
 
 PC PC(
@@ -83,6 +66,37 @@ PC PC(
     .pc_i       (next_pc),
     .pc_o       (now_pc)
 );
+
+Sign_Extend Sign_Extend(
+    .data_i     (IFID_inst[15:0]),
+    .data_o     (extended)
+);
+
+Adder Add_Branch(
+    .data1_in   ({extended[31:2], 2'b00}),
+    .data2_in   (IFID_pc),
+    .data_o     (Branch_addr)
+);
+
+MUX32 Mux_Harzard_Control(
+    .data1_i    (),
+    .data2_i    (always_zero),
+    .select_i   (harzard),
+    .data_o     ()
+);
+
+
+IF_ID IF_ID(
+    .clk_i      (clk_i),
+    .pc_i       (next_pc),
+    .inst_i     (IM_inst),
+    .harzard_i  (harzard),
+    .flush_i    (flush),
+    .pc_o       (IFID_pc),
+    .inst_o     (IFID_inst)
+);
+
+
 
 
 
@@ -111,10 +125,7 @@ MUX32 MUX_ALUSrc(
     .data_o     (post_M32)
 );
 
-Sign_Extend Sign_Extend(
-    .data_i     (inst[15:0]),
-    .data_o     (extended)
-);
+
   
 
 ALU ALU(
