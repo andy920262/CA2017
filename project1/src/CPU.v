@@ -10,36 +10,46 @@ input               clk_i;
 input               rst_i;
 input               start_i;
 
-wire [31:0] next_pc, now_pc, IFID_pc;
-wire [31:0] IM_inst, extended, IFID_inst, IDEX_inst;
+wire [31:0] next_pc, now_pc, ID_pc;
+wire [31:0] IF_inst, ID_inst;
+wire [14:0] EX_inst;
+wire [31:0] ID_ext, EX_ext;
 wire [31:0] Jump_or_next, Branch_or_next, ctrl_or_nop;
 wire [31:0] Branch_addr;
 wire [31:0] always_zero;
+
 wire [1:0]  ctrl_ALUOp;
 wire        ctrl_RegDst, ctrl_ALUSrc;
-wire        ctrl_MemWrite, ctrl_MemRead; // MEM
+wire        ctrl_MemWrite, ctrl_MemRead;  // MEM
 wire        ctrl_MemtoReg, ctrl_RegWrite; // WB
 wire        ctrl_Branch, ctrl_Jump;
+
 wire        hazard, flush;
-wire        Eq_o;
-wire [31:0] read_data1, read_data2;
-wire [1:0]  IDEX_wb, ;
-wire [1:0]  IDEX_m;
-wire [3:0]  IDEX_ex;
-wire [31:0] IDEX_d1, IDEX_d2;
-wire [31:0] IDEX_ext;
-
-
+wire        ID_Eq;
+wire [31:0] ID_rd1, EX_rd1, ID_rd2, EX_rd2;
+wire [1:0]  EX_wb, MEM_wb, WB_wb;
+wire [1:0]  EX_m, MEM_m;
+wire [3:0]  EX_ex;
+wire [4:0]  EX_RegDst, MEM_RegDst;
 //
-wire [4:0]  post_M5;
 wire [31:0] post_M32;
 wire [2:0]  ALU_ctrl;
-wire [31:0] ALU_o;
+wire [31:0] ALU_res, MEM_res, WB_res;
 wire        zero;
 
 
 assign always_zero = 0;
-assign flush = (Eq_o && ctrl_Branch) || ctrl_Jump;
+assign flush = (ID_Eq && ctrl_Branch) || ctrl_Jump;
+
+//IF
+PC PC(
+    .clk_i      (clk_i),
+    .rst_i      (rst_i),
+    .start_i    (start_i),
+    .hazard_i   (hazard),
+    .pc_i       (Jump_or_next),
+    .pc_o       (now_pc)
+);
 
 Adder Add_PC(
     .data1_in   (now_pc),
@@ -49,11 +59,36 @@ Adder Add_PC(
 
 Instruction_Memory Instruction_Memory(
     .addr_i     (now_pc), 
-    .instr_o    (IM_inst)
+    .instr_o    (IF_inst)
 );
 
+MUX32 Mux_Branch(
+    .data1_i    (next_pc),
+    .data2_i    (Branch_addr),
+    .select_i   (ID_Eq && ctrl_Branch),
+    .data_o     (Branch_or_next)
+);
+
+MUX32 Mux_Jump(
+    .data1_i    (Branch_or_next),
+    .data2_i    ({Branch_or_next[31:28], ID_inst[25:0], 2'b0}),
+    .select_i   (ctrl_Jump),
+    .data_o     (Jump_or_next)
+);
+
+IF_ID IF_ID(
+    .clk_i      (clk_i),
+    .pc_i       (next_pc),
+    .inst_i     (IF_inst),
+    .hazard_i   (hazard),
+    .flush_i    (flush),
+    .pc_o       (ID_pc),
+    .inst_o     (ID_inst)
+);
+
+//ID
 Control Control(
-    .Op_i       (IFID_inst[31:26]),
+    .Op_i       (ID_inst[31:26]),
     .RegDst_o   (ctrl_RegDst),
     .ALUOp_o    (ctrl_ALUOp),
     .ALUSrc_o   (ctrl_ALUSrc),
@@ -65,60 +100,38 @@ Control Control(
     .Jump_o     (ctrl_Jump)
 );
 
-PC PC(
+Registers Registers(
     .clk_i      (clk_i),
-    .rst_i      (rst_i),
-    .start_i    (start_i),
-    .hazard_i   (hazard),
-    .pc_i       (Jump_or_next),
-    .pc_o       (now_pc)
-);
-
-Sign_Extend Sign_Extend(
-    .data_i     (IFID_inst[15:0]),
-    .data_o     (extended)
-);
-
-Adder Add_Branch(
-    .data1_in   ({extended[31:2], 2'b0}),
-    .data2_in   (IFID_pc),
-    .data_o     (Branch_addr)
-);
-
-MUX32 Mux_Branch(
-    .data1_i    (next_pc),
-    .data2_i    (Branch_addr),
-    .select_i   (Eq_o && ctrl_Branch),
-    .data_o     (Branch_or_next)
-);
-
-MUX32 Mux_Jump(
-    .data1_i    (Branch_or_next),
-    .data2_i    ({Branch_or_next[31:28], IFID_inst[25:0], 2'b0}),
-    .select_i   (ctrl_Jump),
-    .data_o     (Jump_or_next)
-);
-
-IF_ID IF_ID(
-    .clk_i      (clk_i),
-    .pc_i       (next_pc),
-    .inst_i     (IM_inst),
-    .hazard_i   (hazard),
-    .flush_i    (flush),
-    .pc_o       (IFID_pc),
-    .inst_o     (IFID_inst)
+    .RSaddr_i   (ID_inst[25:21]),
+    .RTaddr_i   (ID_inst[20:16]),
+    .RDaddr_i   (), 
+    .RDdata_i   (),
+    .RegWrite_i (ctrl_RegWrite), 
+    .RSdata_o   (ID_rd1), 
+    .RTdata_o   (ID_rd2) 
 );
 
 Eq Eq(
-    .in1        (read_data1),
-    .in2        (read_data2),
-    .out        (Eq_o)
+    .in1        (ID_rd1),
+    .in2        (ID_rd2),
+    .out        (ID_Eq)
+);
+
+Sign_Extend Sign_Extend(
+    .data_i     (ID_inst[15:0]),
+    .data_o     (ID_ext)
+);
+
+Adder Add_Branch(
+    .data1_in   ({ID_ext[31:2], 2'b0}),
+    .data2_in   (ID_pc),
+    .data_o     (Branch_addr)
 );
 
 Hazard Hazard(
-    .ID_EX_MemRead_i    (IDEX_m[0]),
-    .ID_EX_RdAddr_i     (IDEX_inst[10:6]),
-    .IF_ID_inst_i       (IFID_inst),
+    .ID_EX_MemRead_i    (EX_m[0]),
+    .ID_EX_RdAddr_i     (EX_inst[10:6]),
+    .IF_ID_inst_i       (ID_inst),
     .hazard_o           (hazard)
 );
 
@@ -131,62 +144,89 @@ MUX32 Mux_Harzard_Control(
 );
 
 ID_EX ID_EX(
+    .clk_i      (clk_i),
     .WB_i       (ctrl_or_nop[1:0]),
     .M_i        (ctrl_or_nop[3:2]),
     .EX_i       (ctrl_or_nop[7:4]),
-    .data1_i    (read_data1),
-    .data2_i    (read_data2),
-    .ext_i      (extended),
-    .inst_i     (IFID_inst[25:11]),
-    .WB_o       (IDEX_wb),
-    .M_o        (IDEX_m),
-    .EX_o       (IDEX_ex),
-    .data1_o    (IDEX_d1),
-    .data2_o    (IDEX_d2),
-    .ext_o      (IDEX_ext),
-    .inst_o     (IDEX_inst)
+    .data1_i    (ID_rd1),
+    .data2_i    (ID_rd2),
+    .ext_i      (ID_ext),
+    .inst_i     (ID_inst[25:11]),
+    .WB_o       (EX_wb),
+    .M_o        (EX_m),
+    .EX_o       (EX_ex),
+    .data1_o    (EX_rd1),
+    .data2_o    (EX_rd2),
+    .ext_o      (EX_ext),
+    .inst_o     (EX_inst)
 );
 
-Registers Registers(
-    .clk_i      (clk_i),
-    .RSaddr_i   (inst[25:21]),
-    .RTaddr_i   (inst[20:16]),
-    .RDaddr_i   (post_M5), 
-    .RDdata_i   (ALU_o),
-    .RegWrite_i (ctrl_RegWrite), 
-    .RSdata_o   (read_data1), 
-    .RTdata_o   (read_data2) 
-);
-
+//EX
 MUX5 MUX_RegDst(
-    .data1_i    (inst[20:16]),
-    .data2_i    (inst[15:11]),
-    .select_i   (ctrl_RegDst),
-    .data_o     (post_M5)
-);
-
-MUX32 MUX_ALUSrc(
-    .data1_i    (read_data2),
-    .data2_i    (extended),
-    .select_i   (ctrl_ALUSrc),
-    .data_o     (post_M32)
-);
-
-
-  
-
-ALU ALU(
-    .data1_i    (read_data1),
-    .data2_i    (post_M32),
-    .ALUCtrl_i  (ALU_ctrl),
-    .data_o     (ALU_o),
-    .Zero_o     (zero)
+    .data1_i    (EX_inst[10:6]),
+    .data2_i    (EX_inst[5:1]),
+    .select_i   (EX_ex[1]),
+    .data_o     (EX_RegDst)
 );
 
 ALU_Control ALU_Control(
-    .funct_i    (inst[5:0]),
-    .ALUOp_i    (ctrl_ALUOp),
+    .funct_i    (EX_ext[5:0]),
+    .ALUOp_i    (EX_ex[3:2]),
     .ALUCtrl_o  (ALU_ctrl)
+);
+
+ALU ALU(
+    .data1_i    (),
+    .data2_i    (),
+    .ALUCtrl_i  (ALU_ctrl),
+    .data_o     (ALU_res),
+    .Zero_o     (zero)
+);
+
+EX_MEM EX_MEM(
+    .clk_i      (clk_i),
+    .WB_i       (EX_wb),
+    .M_i        (EX_m),
+    .ALUresult_i(ALU_res),
+    .WriteData_i(),
+    .RegDst_i   (EX_RegDst),
+    .WB_o       (MEM_wb),
+    .M_o        (MEM_m),
+    .ALUresult_o(MEM_res),
+    .WriteData_o(),
+    .RegDst_o   (MEM_RegDst)
+);
+
+//MEM
+
+Memory Memory(
+    .clk_i      (clk_i),
+    .Address_i  (),
+    .WriteData_i(),
+    .MemWrite_i (),
+    .MemRead_i  (),
+    .ReadData_o ()
+);
+
+MEM_WB MEM_WB(
+    .clk_i      (clk_i),
+    .WB_i       (MEM_wb),
+    .ReadMem_i  (),
+    .ALUresult_i(MEM_res),
+    .RegRD_i    (),
+    .WB_o       (WB_wb),
+    .ReadMem_o  (),
+    .ALUresult_o(WB_res),
+    .RegRD_o    ()
+);
+
+//WB
+
+MUX32 MUX_ALUSrc(
+    .data1_i    (read_data2),
+    .data2_i    (ID_ext),
+    .select_i   (ctrl_ALUSrc),
+    .data_o     (post_M32)
 );
 
 endmodule
