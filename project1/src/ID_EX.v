@@ -1,5 +1,6 @@
 module ID_EX
 (
+    clk_i,
     WB_i,
     M_i,
     EX_i,
@@ -16,6 +17,7 @@ module ID_EX
     inst_o
 );
 
+input               clk_i;
 input       [1:0]   WB_i, M_i;
 input       [3:0]   EX_i;
 input       [31:0]  data1_i, data2_i, ext_i;

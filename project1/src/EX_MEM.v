@@ -1,4 +1,5 @@
 module EX_MEM(
+    clk_i,
     WB_i,
     M_i,
     ALUresult_i,
@@ -12,6 +13,7 @@ module EX_MEM(
 );
 
 // port
+input           clk_i;
 input   [1:0]   WB_i;
 input   [1:0]   M_i;
 input   [31:0]  ALUresult_i;
