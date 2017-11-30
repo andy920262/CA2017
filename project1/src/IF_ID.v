@@ -11,7 +11,7 @@ module IF_ID
 
 input       [31:0]  pc_i, inst_i;
 input               clk_i, hazard_i, flush_i;
-output  reg [31:0]  pc_o, init_o;
+output  reg [31:0]  pc_o, inst_o;
 
 initial begin
     pc_o = 0;
