@@ -30,16 +30,21 @@ wire [31:0] ID_rd1, EX_rd1, ID_rd2, EX_rd2;
 wire [1:0]  EX_wb, MEM_wb, WB_wb;
 wire [1:0]  EX_m, MEM_m;
 wire [3:0]  EX_ex;
-wire [4:0]  EX_RegDst, MEM_RegDst;
-//
-wire [31:0] post_M32;
+wire [4:0]  EX_RegDst, MEM_RegDst, WB_RegDst;
+wire [31:0] MEM_data, WB_data, WB_wdata;
+wire [1:0]  forwardA, forwardB;
 wire [2:0]  ALU_ctrl;
 wire [31:0] ALU_res, MEM_res, WB_res;
+wire [31:0] EX_wd, MEM_wd;
+wire [31:0] ALU_in1, ALU_in2;
+wire [31:0] post_fa, post_fb;
 wire        zero;
 
 
 assign always_zero = 0;
 assign flush = (ID_Eq && ctrl_Branch) || ctrl_Jump;
+assign ALU_in1 = post_fa;
+assign EX_wd = post_fb;
 
 //IF
 PC PC(
@@ -104,9 +109,9 @@ Registers Registers(
     .clk_i      (clk_i),
     .RSaddr_i   (ID_inst[25:21]),
     .RTaddr_i   (ID_inst[20:16]),
-    .RDaddr_i   (), 
-    .RDdata_i   (),
-    .RegWrite_i (ctrl_RegWrite), 
+    .RDaddr_i   (WB_RegDst), 
+    .RDdata_i   (WB_wdata),
+    .RegWrite_i (WB_wb[0]), 
     .RSdata_o   (ID_rd1), 
     .RTdata_o   (ID_rd2) 
 );
@@ -169,6 +174,29 @@ MUX5 MUX_RegDst(
     .data_o     (EX_RegDst)
 );
 
+MUX32_3 MUX_ForwardA(
+    .data1_i    (EX_rd1),
+    .data2_i    (WB_wdata),
+    .data3_i    (MEM_res),
+    .select_i   (forwardA),
+    .data_o     (post_fa)
+);
+
+MUX32_3 MUX_ForwardB(
+    .data1_i    (EX_rd2),
+    .data2_i    (WB_wdata),
+    .data3_i    (MEM_res),
+    .select_i   (forwardB),
+    .data_o     (post_fb)
+);
+
+MUX32 MUX_ALUSrc(
+    .data1_i    (post_fb),
+    .data2_i    (EX_ext),
+    .select_i   (EX_ex[0]),
+    .data_o     (ALU_in2)
+);
+
 ALU_Control ALU_Control(
     .funct_i    (EX_ext[5:0]),
     .ALUOp_i    (EX_ex[3:2]),
@@ -176,8 +204,8 @@ ALU_Control ALU_Control(
 );
 
 ALU ALU(
-    .data1_i    (),
-    .data2_i    (),
+    .data1_i    (ALU_in1),
+    .data2_i    (ALU_in2),
     .ALUCtrl_i  (ALU_ctrl),
     .data_o     (ALU_res),
     .Zero_o     (zero)
@@ -188,12 +216,12 @@ EX_MEM EX_MEM(
     .WB_i       (EX_wb),
     .M_i        (EX_m),
     .ALUresult_i(ALU_res),
-    .WriteData_i(),
+    .WriteData_i(EX_wd),
     .RegDst_i   (EX_RegDst),
     .WB_o       (MEM_wb),
     .M_o        (MEM_m),
     .ALUresult_o(MEM_res),
-    .WriteData_o(),
+    .WriteData_o(MEM_wd),
     .RegDst_o   (MEM_RegDst)
 );
 
@@ -201,32 +229,42 @@ EX_MEM EX_MEM(
 
 Memory Memory(
     .clk_i      (clk_i),
-    .Address_i  (),
-    .WriteData_i(),
-    .MemWrite_i (),
-    .MemRead_i  (),
-    .ReadData_o ()
+    .Address_i  (MEM_res),
+    .WriteData_i(MEM_wd),
+    .MemWrite_i (MEM_m[1]),
+    .MemRead_i  (MEM_m[0]),
+    .ReadData_o (MEM_data)
 );
 
 MEM_WB MEM_WB(
     .clk_i      (clk_i),
     .WB_i       (MEM_wb),
-    .ReadMem_i  (),
+    .ReadMem_i  (MEM_data),
     .ALUresult_i(MEM_res),
-    .RegRD_i    (),
+    .RegRD_i    (MEM_RegDst),
     .WB_o       (WB_wb),
-    .ReadMem_o  (),
+    .ReadMem_o  (WB_data),
     .ALUresult_o(WB_res),
-    .RegRD_o    ()
+    .RegRD_o    (WB_RegDst)
 );
 
 //WB
+MUX32 MUX_MemtoReg(
+    .data1_i    (WB_data),
+    .data2_i    (WB_res),
+    .select_i   (WB_wb[1]),
+    .data_o     (WB_wdata)
+);
 
-MUX32 MUX_ALUSrc(
-    .data1_i    (read_data2),
-    .data2_i    (ID_ext),
-    .select_i   (ctrl_ALUSrc),
-    .data_o     (post_M32)
+Forward Forward(
+    .EXMEM_rw_i (MEM_wb[0]),
+    .MEMWB_rw_i (WB_wb[0]),
+    .EXMEM_rd_i (MEM_RegDst),
+    .MEMWB_rd_i (WB_RegDst),
+    .IDEX_rs_i  (EX_inst[15:11]),
+    .IDEX_rt_i  (EX_inst[10:6]),
+    .forwardA_o (forwardA),
+    .forwardB_o (forwardB)
 );
 
 endmodule
