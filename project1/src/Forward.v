@@ -3,9 +3,9 @@ module Forward
     EXMEM_rw_i,
     MEMWB_rw_i,
     EXMEM_rd_i,
+    MEMWB_rd_i,
     IDEX_rs_i,
     IDEX_rt_i,
-    MEMWB_rd_i,
     forwardA_o,
     forwardB_o
 );
