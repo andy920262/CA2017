@@ -15,6 +15,7 @@ input               MemWrite_i;
 input   [31:0]      Address_i;
 input   [31:0]      WriteData_i;
 output  [31:0]      ReadData_o;
+reg                 ReadData_o;
 
 // Register File
 reg     [31:0]  mem [0:7];
