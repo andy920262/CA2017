@@ -3,7 +3,7 @@ module Control
     Op_i,
     RegDst_o,
     ALUSrc_o, 
-	MemtoReg,
+	MemtoReg_o,
     RegWrite_o,
 	MemWrite_o,
 	MemRead_o,
@@ -14,10 +14,10 @@ module Control
 
 input		[5:0]	Op_i;
 output		[1:0]	ALUOp_o;
-output				RegDst_o, ALUSrc_o, MemtoReg, RegWrite_o;
+output				RegDst_o, ALUSrc_o, MemtoReg_o, RegWrite_o;
 output				MemWrite_o, MemRead_o, Branch_o, Jump_o;
 reg			[9:0]	tmp;
-assign { RegDst_o, ALUSrc_o, MemtoReg, RegWrite_o,
+assign { RegDst_o, ALUSrc_o, MemtoReg_o, RegWrite_o,
 	MemWrite_o, MemRead_o, Branch_o, Jump_o, ALUOp_o } = tmp;
 
 always @(*) begin

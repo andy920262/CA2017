@@ -57,8 +57,8 @@ PC PC(
 );
 
 Adder Add_PC(
-    .data1_in   (now_pc),
-    .data2_in   (32'd4),
+    .data1_i    (now_pc),
+    .data2_i    (32'd4),
     .data_o     (next_pc)
 );
 
@@ -128,8 +128,8 @@ Sign_Extend Sign_Extend(
 );
 
 Adder Add_Branch(
-    .data1_in   ({ID_ext[31:2], 2'b0}),
-    .data2_in   (ID_pc),
+    .data1_i    ({ID_ext[31:2], 2'b0}),
+    .data2_i    (ID_pc),
     .data_o     (Branch_addr)
 );
 
