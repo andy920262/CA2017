@@ -30,7 +30,7 @@ initial begin
     end
     
     // Load instructions into instruction memory
-    $readmemb("instruction.txt", CPU.Instruction_Memory.memory);
+    $readmemb("Fibonacci_instruction.txt", CPU.Instruction_Memory.memory);
     
     // Open output file
     outfile = $fopen("output.txt") | 1;
@@ -66,7 +66,14 @@ always@(posedge Clk) begin
     $fdisplay(outfile, "R5(a1) = %d, R13(t5) = %d, R21(s5) = %d, R29(sp) = %d", CPU.Registers.register[5], CPU.Registers.register[13], CPU.Registers.register[21], CPU.Registers.register[29]);
     $fdisplay(outfile, "R6(a2) = %d, R14(t6) = %d, R22(s6) = %d, R30(s8) = %d", CPU.Registers.register[6], CPU.Registers.register[14], CPU.Registers.register[22], CPU.Registers.register[30]);
     $fdisplay(outfile, "R7(a3) = %d, R15(t7) = %d, R23(s7) = %d, R31(ra) = %d", CPU.Registers.register[7], CPU.Registers.register[15], CPU.Registers.register[23], CPU.Registers.register[31]);
-    
+    $fdisplay(outfile, "Data Memory: 0x00 =          %d", CPU.Memory.mem[0]);
+    $fdisplay(outfile, "Data Memory: 0x04 =          %d", CPU.Memory.mem[1]);
+    $fdisplay(outfile, "Data Memory: 0x08 =          %d", CPU.Memory.mem[2]);
+    $fdisplay(outfile, "Data Memory: 0x0c =          %d", CPU.Memory.mem[3]);
+    $fdisplay(outfile, "Data Memory: 0x10 =          %d", CPU.Memory.mem[4]);
+    $fdisplay(outfile, "Data Memory: 0x14 =          %d", CPU.Memory.mem[5]);
+    $fdisplay(outfile, "Data Memory: 0x18 =          %d", CPU.Memory.mem[6]);
+    $fdisplay(outfile, "Data Memory: 0x1c =          %d", CPU.Memory.mem[7]);
     $fdisplay(outfile, "\n");
     if (CPU.hazard)
         stall = stall + 1;
