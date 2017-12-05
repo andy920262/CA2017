@@ -23,7 +23,7 @@ always @(posedge clk_i) begin
         pc_o <= 0;
         inst_o <= 0;
     end
-    else if !(hazard_i) begin
+    else if (hazard_i != 1) begin
         pc_o <= pc_i;
         inst_o <= inst_i;
     end

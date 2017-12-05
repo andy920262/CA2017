@@ -20,6 +20,11 @@ reg			[9:0]	tmp;
 assign { RegDst_o, ALUSrc_o, MemtoReg_o, RegWrite_o,
 	MemWrite_o, MemRead_o, Branch_o, Jump_o, ALUOp_o } = tmp;
 
+initial begin
+#1
+	tmp = 0;
+end
+
 always @(*) begin
 	case (Op_i)
 		6'b000000: begin // r-type

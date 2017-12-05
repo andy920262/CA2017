@@ -20,16 +20,18 @@ initial begin
     $dumpfile("Sim.vcd");
     $dumpvars;
     counter = 0;
+    stall = 0;
+    flush = 0;
     
     // initialize instruction memory
     for(i=0; i<256; i=i+1) begin
         CPU.Instruction_Memory.memory[i] = 32'b0;
     end
-
+    
     // initialize data memory
     for(i=0; i<32; i=i+1) begin
         CPU.Memory.mem[i] = 8'b0;
-    end  
+    end    
         
     // initialize Register File
     for(i=0; i<32; i=i+1) begin
@@ -38,16 +40,16 @@ initial begin
     
     // Load instructions into instruction memory
     $readmemb("instruction.txt", CPU.Instruction_Memory.memory);
-    //$readmemb("Fibonacci_instruction.txt", CPU.Instruction_Memory.memory);
     
     // Open output file
     outfile = $fopen("output.txt") | 1;
     
+    // Set Input n into data memory at 0x00
+    CPU.Memory.mem[0] = 8'h5;       // n = 5 for example
+    
     Clk = 0;
     Reset = 0;
     Start = 0;
-    stall = 0;
-    flush = 0;
     
     #(`CYCLE_TIME/4) 
     Reset = 1;
@@ -59,10 +61,13 @@ end
 always@(posedge Clk) begin
     if(counter == 30)    // stop after 30 cycles
         $stop;
-        
-    $fdisplay(outfile, "cycle = %d, Start = %d, Stall = %d, Flush = %d", counter, Start, stall, flush);
+
+    // put in your own signal to count stall and flush
+    // if(CPU.HazzardDetection.mux8_o == 1 && CPU.Control.Jump_o == 0 && CPU.Control.Branch_o == 0)stall = stall + 1;
+    // if(CPU.HazzardDetection.Flush_o == 1)flush = flush + 1;  
+
     // print PC
-    $fdisplay(outfile, "PC = %d", CPU.PC.pc_o);
+    $fdisplay(outfile, "cycle = %d, Start = %d, Stall = %d, Flush = %d\nPC = %d", counter, Start, stall, flush, CPU.PC.pc_o);
     
     // print Registers
     $fdisplay(outfile, "Registers");
@@ -74,21 +79,22 @@ always@(posedge Clk) begin
     $fdisplay(outfile, "R5(a1) = %d, R13(t5) = %d, R21(s5) = %d, R29(sp) = %d", CPU.Registers.register[5], CPU.Registers.register[13], CPU.Registers.register[21], CPU.Registers.register[29]);
     $fdisplay(outfile, "R6(a2) = %d, R14(t6) = %d, R22(s6) = %d, R30(s8) = %d", CPU.Registers.register[6], CPU.Registers.register[14], CPU.Registers.register[22], CPU.Registers.register[30]);
     $fdisplay(outfile, "R7(a3) = %d, R15(t7) = %d, R23(s7) = %d, R31(ra) = %d", CPU.Registers.register[7], CPU.Registers.register[15], CPU.Registers.register[23], CPU.Registers.register[31]);
-    // print Memory
-    $fdisplay(outfile, "Data Memory: 0x00 =          %d", CPU.Memory.mem[0]);
-    $fdisplay(outfile, "Data Memory: 0x04 =          %d", CPU.Memory.mem[1]);
-    $fdisplay(outfile, "Data Memory: 0x08 =          %d", CPU.Memory.mem[2]);
-    $fdisplay(outfile, "Data Memory: 0x0c =          %d", CPU.Memory.mem[3]);
-    $fdisplay(outfile, "Data Memory: 0x10 =          %d", CPU.Memory.mem[4]);
-    $fdisplay(outfile, "Data Memory: 0x14 =          %d", CPU.Memory.mem[5]);
-    $fdisplay(outfile, "Data Memory: 0x18 =          %d", CPU.Memory.mem[6]);
-    $fdisplay(outfile, "Data Memory: 0x1c =          %d", CPU.Memory.mem[7]);
+
+    // print Data Memory
+    $fdisplay(outfile, "Data Memory: 0x00 = %d", {CPU.Memory.mem[3] , CPU.Memory.mem[2] , CPU.Memory.mem[1] , CPU.Memory.mem[0] });
+    $fdisplay(outfile, "Data Memory: 0x04 = %d", {CPU.Memory.mem[7] , CPU.Memory.mem[6] , CPU.Memory.mem[5] , CPU.Memory.mem[4] });
+    $fdisplay(outfile, "Data Memory: 0x08 = %d", {CPU.Memory.mem[11], CPU.Memory.mem[10], CPU.Memory.mem[9] , CPU.Memory.mem[8] });
+    $fdisplay(outfile, "Data Memory: 0x0c = %d", {CPU.Memory.mem[15], CPU.Memory.mem[14], CPU.Memory.mem[13], CPU.Memory.mem[12]});
+    $fdisplay(outfile, "Data Memory: 0x10 = %d", {CPU.Memory.mem[19], CPU.Memory.mem[18], CPU.Memory.mem[17], CPU.Memory.mem[16]});
+    $fdisplay(outfile, "Data Memory: 0x14 = %d", {CPU.Memory.mem[23], CPU.Memory.mem[22], CPU.Memory.mem[21], CPU.Memory.mem[20]});
+    $fdisplay(outfile, "Data Memory: 0x18 = %d", {CPU.Memory.mem[27], CPU.Memory.mem[26], CPU.Memory.mem[25], CPU.Memory.mem[24]});
+    $fdisplay(outfile, "Data Memory: 0x1c = %d", {CPU.Memory.mem[31], CPU.Memory.mem[30], CPU.Memory.mem[29], CPU.Memory.mem[28]});
+	
     $fdisplay(outfile, "\n");
-    if (CPU.hazard)
-        stall = stall + 1;
-    if (CPU.flush)
-        flush = flush + 1;
+    
     counter = counter + 1;
+    
+      
 end
 
   

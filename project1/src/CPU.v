@@ -140,7 +140,7 @@ Hazard Hazard(
     .hazard_o           (hazard)
 );
 
-MUX32 Mux_Harzard_Control(
+MUX32 Mux_Hazard_Control(
     .data1_i    ({24'b0, ctrl_ALUOp, ctrl_RegDst, ctrl_ALUSrc, 
         ctrl_MemWrite, ctrl_MemRead, ctrl_MemtoReg, ctrl_RegWrite}),
     .data2_i    (always_zero),
@@ -168,8 +168,8 @@ ID_EX ID_EX(
 
 //EX
 MUX5 MUX_RegDst(
-    .data1_i    (EX_inst[10:6]),
-    .data2_i    (EX_inst[5:1]),
+    .data1_i    (EX_inst[9:5]),
+    .data2_i    (EX_inst[4:0]),
     .select_i   (EX_ex[1]),
     .data_o     (EX_RegDst)
 );
@@ -250,8 +250,8 @@ MEM_WB MEM_WB(
 
 //WB
 MUX32 MUX_MemtoReg(
-    .data1_i    (WB_data),
-    .data2_i    (WB_res),
+    .data1_i    (WB_res),
+    .data2_i    (WB_data),
     .select_i   (WB_wb[1]),
     .data_o     (WB_wdata)
 );
@@ -261,8 +261,8 @@ Forward Forward(
     .MEMWB_rw_i (WB_wb[0]),
     .EXMEM_rd_i (MEM_RegDst),
     .MEMWB_rd_i (WB_RegDst),
-    .IDEX_rs_i  (EX_inst[15:11]),
-    .IDEX_rt_i  (EX_inst[10:6]),
+    .IDEX_rs_i  (EX_inst[14:10]),
+    .IDEX_rt_i  (EX_inst[9:5]),
     .forwardA_o (forwardA),
     .forwardB_o (forwardB)
 );
