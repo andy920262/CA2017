@@ -27,6 +27,10 @@ always @(negedge clk_i) begin
         pc_o <= pc_i;
         inst_o <= inst_i;
     end
+    else begin
+        pc_o <= pc_o;
+        inst_o <= inst_o;
+    end
 end
 
 endmodule
