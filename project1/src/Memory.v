@@ -15,21 +15,22 @@ input               MemWrite_i;
 input   [31:0]      Address_i;
 input   [31:0]      WriteData_i;
 output  [31:0]      ReadData_o;
-reg                 ReadData_o;
+// reg                 ReadData_o;
 
 // Register File
 reg     [7:0]  mem [0:31];
 
-// Read Data      
-always@(negedge clk_i) begin
-    if(MemRead_i)
-        ReadData_o = mem[Address_i];
-end
+// Read Data
+assign ReadData_o = {mem[Address_i + 3], mem[Address_i + 2], mem[Address_i + 1], mem[Address_i]};
+// always@(negedge clk_i or posedge clk_i) begin
+//     if(MemRead_i)
+//         ReadData_o = {mem[Address_i + 3], mem[Address_i + 2], mem[Address_i + 1], mem[Address_i]};
+// end
 
 // Write Data   
 always@(posedge clk_i) begin
     if(MemWrite_i)
-        mem[Address_i] = WriteData_i;
+        {mem[Address_i + 3], mem[Address_i + 2], mem[Address_i + 1], mem[Address_i]} = WriteData_i;
 end
    
 endmodule 

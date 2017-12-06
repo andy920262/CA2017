@@ -23,7 +23,7 @@ always @(*) begin
     else if(MEMWB_rw_i &&
             MEMWB_rd_i != 32'b0 &&
             EXMEM_rd_i != IDEX_rs_i &&
-            MEMWB_rd_i != IDEX_rs_i) begin
+            MEMWB_rd_i == IDEX_rs_i) begin
         forwardA_o = 2'b01;
     end
     else begin
@@ -37,7 +37,7 @@ always @(*) begin
     else if(MEMWB_rw_i &&
             MEMWB_rd_i != 32'b0 &&
             EXMEM_rd_i != IDEX_rt_i &&
-            MEMWB_rd_i != IDEX_rt_i) begin
+            MEMWB_rd_i == IDEX_rt_i) begin
         forwardB_o = 2'b01;
     end
     else begin

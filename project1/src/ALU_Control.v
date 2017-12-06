@@ -14,7 +14,7 @@ assign ALUCtrl_o = tmp;
 
 always @(*) begin
 	case (ALUOp_i)
-		2'b01:
+		2'b01: // addi
 			tmp = 3'd2;
 		2'b00: // R-type
 			case (funct_i)

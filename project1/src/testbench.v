@@ -94,6 +94,7 @@ always@(posedge Clk) begin
     $fdisplay(outfile, "Data Memory: 0x18 = %d", {CPU.Memory.mem[27], CPU.Memory.mem[26], CPU.Memory.mem[25], CPU.Memory.mem[24]});
     $fdisplay(outfile, "Data Memory: 0x1c = %d", {CPU.Memory.mem[31], CPU.Memory.mem[30], CPU.Memory.mem[29], CPU.Memory.mem[28]});
 	$fdisplay(outfile, "Mux_Mem2Reg: %d", CPU.MUX_MemtoReg.data_o);
+    $fdisplay(outfile, "Mem Read Output: %d", CPU.Memory.ReadData_o);
     $fdisplay(outfile, "\n");
     
     counter = counter + 1;
