@@ -135,7 +135,7 @@ Adder Add_Branch(
 
 Hazard Hazard(
     .ID_EX_MemRead_i    (EX_m[0]),
-    .ID_EX_RdAddr_i     (EX_inst[10:6]),
+    .ID_EX_RdAddr_i     (EX_inst[9:5]),
     .IF_ID_inst_i       (ID_inst),
     .hazard_o           (hazard)
 );
@@ -158,7 +158,7 @@ ID_EX ID_EX(
     .ext_i      (ID_ext),
     .inst_i     (ID_inst[25:11]),
     .WB_o       (EX_wb),
-    .M_o        (EX_m),
+    .M_o        (EX_m), // MemWrtie, MemRead
     .EX_o       (EX_ex),
     .data1_o    (EX_rd1),
     .data2_o    (EX_rd2),

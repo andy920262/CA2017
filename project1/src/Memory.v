@@ -18,7 +18,7 @@ output  [31:0]      ReadData_o;
 reg                 ReadData_o;
 
 // Register File
-reg     [31:0]  mem [0:7];
+reg     [7:0]  mem [0:31];
 
 // Read Data      
 always@(negedge clk_i) begin

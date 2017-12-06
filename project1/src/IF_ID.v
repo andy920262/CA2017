@@ -18,7 +18,7 @@ initial begin
     inst_o = 0;
 end
 
-always @(posedge clk_i) begin
+always @(negedge clk_i) begin
     if (flush_i) begin
         pc_o <= 0;
         inst_o <= 0;

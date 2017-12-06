@@ -64,7 +64,11 @@ always@(posedge Clk) begin
 
     // put in your own signal to count stall and flush
     // if(CPU.HazzardDetection.mux8_o == 1 && CPU.Control.Jump_o == 0 && CPU.Control.Branch_o == 0)stall = stall + 1;
-    // if(CPU.HazzardDetection.Flush_o == 1)flush = flush + 1;  
+    // if(CPU.HazzardDetection.Flush_o == 1)flush = flush + 1; 
+    if (CPU.hazard)
+        stall = stall + 1;
+    if (CPU.flush)
+        flush = flush + 1; 
 
     // print PC
     $fdisplay(outfile, "cycle = %d, Start = %d, Stall = %d, Flush = %d\nPC = %d", counter, Start, stall, flush, CPU.PC.pc_o);
@@ -81,15 +85,15 @@ always@(posedge Clk) begin
     $fdisplay(outfile, "R7(a3) = %d, R15(t7) = %d, R23(s7) = %d, R31(ra) = %d", CPU.Registers.register[7], CPU.Registers.register[15], CPU.Registers.register[23], CPU.Registers.register[31]);
 
     // print Data Memory
-    $fdisplay(outfile, "Data Memory: 0x00 = %d", {CPU.Memory.mem[3] , CPU.Memory.mem[2] , CPU.Memory.mem[1] , CPU.Memory.mem[0] });
-    $fdisplay(outfile, "Data Memory: 0x04 = %d", {CPU.Memory.mem[7] , CPU.Memory.mem[6] , CPU.Memory.mem[5] , CPU.Memory.mem[4] });
-    $fdisplay(outfile, "Data Memory: 0x08 = %d", {CPU.Memory.mem[11], CPU.Memory.mem[10], CPU.Memory.mem[9] , CPU.Memory.mem[8] });
+    $fdisplay(outfile, "Data Memory: 0x00 = %d", {CPU.Memory.mem[3], CPU.Memory.mem[2], CPU.Memory.mem[1], CPU.Memory.mem[0]});
+    $fdisplay(outfile, "Data Memory: 0x04 = %d", {CPU.Memory.mem[7], CPU.Memory.mem[6], CPU.Memory.mem[5], CPU.Memory.mem[4]});
+    $fdisplay(outfile, "Data Memory: 0x08 = %d", {CPU.Memory.mem[11], CPU.Memory.mem[10], CPU.Memory.mem[9], CPU.Memory.mem[8]});
     $fdisplay(outfile, "Data Memory: 0x0c = %d", {CPU.Memory.mem[15], CPU.Memory.mem[14], CPU.Memory.mem[13], CPU.Memory.mem[12]});
     $fdisplay(outfile, "Data Memory: 0x10 = %d", {CPU.Memory.mem[19], CPU.Memory.mem[18], CPU.Memory.mem[17], CPU.Memory.mem[16]});
     $fdisplay(outfile, "Data Memory: 0x14 = %d", {CPU.Memory.mem[23], CPU.Memory.mem[22], CPU.Memory.mem[21], CPU.Memory.mem[20]});
     $fdisplay(outfile, "Data Memory: 0x18 = %d", {CPU.Memory.mem[27], CPU.Memory.mem[26], CPU.Memory.mem[25], CPU.Memory.mem[24]});
     $fdisplay(outfile, "Data Memory: 0x1c = %d", {CPU.Memory.mem[31], CPU.Memory.mem[30], CPU.Memory.mem[29], CPU.Memory.mem[28]});
-	
+	$fdisplay(outfile, "Mux_Mem2Reg: %d", CPU.MUX_MemtoReg.data_o);
     $fdisplay(outfile, "\n");
     
     counter = counter + 1;

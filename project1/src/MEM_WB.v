@@ -29,7 +29,7 @@ initial begin
 end
 
 // Write Data   
-always@(posedge clk_i) begin
+always@(negedge clk_i) begin
     WB_o <= WB_i;
     ReadMem_o <= ReadMem_i;
     ALUresult_o <= ALUresult_i;
