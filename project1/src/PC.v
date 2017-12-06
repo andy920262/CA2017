@@ -25,7 +25,7 @@ always@(posedge clk_i or negedge rst_i) begin
         pc_o <= 32'b0;
     end
     else begin
-        if(start_i || !hazard_i)
+        if(start_i && !hazard_i)
             pc_o <= pc_i;
         else
             pc_o <= pc_o;
