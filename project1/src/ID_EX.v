@@ -38,7 +38,7 @@ initial begin
     inst_o = 0;
 end
 
-always@(negedge clk_i) begin
+always@(posedge clk_i) begin
     WB_o <= WB_i;
     M_o <= M_i;
     EX_o <= EX_i;

@@ -18,18 +18,18 @@ initial begin
     inst_o = 0;
 end
 
-always @(negedge clk_i) begin
+always @(posedge clk_i) begin
     if (flush_i) begin
         pc_o <= 0;
         inst_o <= 0;
     end
-    else if (hazard_i != 1) begin
-        pc_o <= pc_i;
-        inst_o <= inst_i;
-    end
-    else begin
+    else if (hazard_i) begin
         pc_o <= pc_o;
         inst_o <= inst_o;
+    end
+    else begin
+        pc_o <= pc_i;
+        inst_o <= inst_i;
     end
 end
 

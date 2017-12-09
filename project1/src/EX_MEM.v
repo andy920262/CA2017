@@ -33,7 +33,7 @@ initial begin
     RegDst_o <= 0;
 end
 
-always@(negedge clk_i) begin
+always@(posedge clk_i) begin
     WB_o <= WB_i;
     M_o <= M_i;
     ALUresult_o <= ALUresult_i;

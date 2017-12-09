@@ -29,8 +29,15 @@ assign ReadData_o = {mem[Address_i + 3], mem[Address_i + 2], mem[Address_i + 1],
 
 // Write Data   
 always@(posedge clk_i) begin
-    if(MemWrite_i)
-        {mem[Address_i + 3], mem[Address_i + 2], mem[Address_i + 1], mem[Address_i]} = WriteData_i;
+    if(MemWrite_i) begin
+        mem[Address_i]		<= WriteData_i[7:0];
+        mem[Address_i + 1]	<= WriteData_i[15:8];
+        mem[Address_i + 2]	<= WriteData_i[23:16];
+        mem[Address_i + 3]	<= WriteData_i[31:24];
+        
+        /* This sometime not work ?????? */
+        //{mem[Address_i + 3], mem[Address_i + 2], mem[Address_i + 1], mem[Address_i]} = WriteData_i;
+    end
 end
    
 endmodule 
