@@ -128,7 +128,7 @@ Sign_Extend Sign_Extend(
 );
 
 Adder Add_Branch(
-    .data1_i    ({ID_ext[31:2], 2'b0}),
+    .data1_i    ({ID_ext[29:0], 2'b0}),
     .data2_i    (ID_pc),
     .data_o     (Branch_addr)
 );
