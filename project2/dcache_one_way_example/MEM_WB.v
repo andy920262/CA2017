@@ -32,10 +32,10 @@ end
 // Write Data   
 always@(posedge clk_i) begin
     if (stall_i) begin
-        WB_o <= WB_i;
-        ReadMem_o <= ReadMem_i;
-        ALUresult_o <= ALUresult_i;
-        RegRD_o <= RegRD_i;
+        WB_o <= WB_o;
+        ReadMem_o <= ReadMem_o;
+        ALUresult_o <= ALUresult_o;
+        RegRD_o <= RegRD_o;
     end
     else begin
         WB_o <= WB_i;

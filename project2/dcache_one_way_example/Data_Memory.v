@@ -39,6 +39,7 @@ assign	addr = addr_i>>5;
 assign	data_o = data;
 initial begin
 state <= STATE_IDLE;
+count = 0;
 end
 //Controller 
 always@(posedge clk_i) begin
@@ -56,7 +57,7 @@ always@(posedge clk_i) begin
 				end
 			end
 			STATE_WAIT: begin
-				if(count == 4'd9) begin	
+				if(count == 4'd7) begin	
 					state <= STATE_IDLE;
 				end
 				else begin
@@ -89,7 +90,7 @@ always@(posedge clk_i) begin
 	end
 end
 
-assign ack = (state == STATE_WAIT) && (count == 4'd9);
+assign ack = (state == STATE_WAIT) && (count == 4'd7);
 
 always@(posedge clk_i) begin
 	if(~rst_i) begin
@@ -113,7 +114,7 @@ end
 // Read Data       
 always@(posedge clk_i) begin
     if(ack && !write_reg) begin
-		data = memory[addr];
+		data <= memory[addr];
 	end
 end
 
