@@ -154,6 +154,9 @@ always@(posedge clk_i or negedge rst_i) begin
 			STATE_MISS: begin
 				if(sram_dirty) begin		//write back if dirty
 					//!!! add you code here!
+					mem_enable = 1;
+					mem_write = 1;
+					write_back = 1;
 					state <= STATE_WRITEBACK;
 				end
 				else begin					//write allocate: write miss = read miss + write hit; read miss = read miss + read hit
@@ -167,7 +170,7 @@ always@(posedge clk_i or negedge rst_i) begin
 				if(mem_ack_i) begin			//wait for data memory acknowledge
 					//!!! add you code here!
 					cache_we = 1;
-
+					mem_enable = 0;
 					state <= STATE_READMISSOK;
 				end
 				else begin
@@ -175,12 +178,15 @@ always@(posedge clk_i or negedge rst_i) begin
 				end
 			end
 			STATE_READMISSOK: begin			//wait for data memory acknowledge
-					//!!! add you code here! 
+				//!!! add you code here!
+				cache_we = 0;	
 				state <= STATE_IDLE;
 			end
 			STATE_WRITEBACK: begin
 				if(mem_ack_i) begin			//wait for data memory acknowledge
-					//!!! add you code here! 
+					//!!! add you code here!
+					mem_enable = 1;
+					mem_write = 0;
 					state <= STATE_READMISS;
 				end
 				else begin
