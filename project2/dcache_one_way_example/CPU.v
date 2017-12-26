@@ -74,7 +74,6 @@ PC PC(
     .rst_i      (rst_i),
     .start_i    (start_i),
 	.stall_i	(stall),
-	.pcEnable_i	(),
     .hazard_i   (hazard),
     .pc_i       (Jump_or_next),
     .pc_o       (now_pc)
