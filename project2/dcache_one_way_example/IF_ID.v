@@ -1,6 +1,7 @@
 module IF_ID
 (
     clk_i,
+    stall_i,
     pc_i,
     inst_i,
     hazard_i,
@@ -10,7 +11,7 @@ module IF_ID
 );
 
 input       [31:0]  pc_i, inst_i;
-input               clk_i, hazard_i, flush_i;
+input               clk_i, hazard_i, flush_i, stall_i;
 output  reg [31:0]  pc_o, inst_o;
 
 initial begin
@@ -23,7 +24,7 @@ always @(posedge clk_i) begin
         pc_o <= 0;
         inst_o <= 0;
     end
-    else if (hazard_i) begin
+    else if (hazard_i || stall_i) begin
         pc_o <= pc_o;
         inst_o <= inst_o;
     end

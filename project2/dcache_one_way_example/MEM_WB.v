@@ -1,5 +1,6 @@
 module MEM_WB(
     clk_i,
+    stall_i,
     WB_i,
     ReadMem_i,
     ALUresult_i,
@@ -11,7 +12,7 @@ module MEM_WB(
 );
 
 // port
-input           clk_i;
+input           clk_i, stall_i;
 input   [1:0]   WB_i;
 input   [31:0]  ReadMem_i;
 input   [31:0]  ALUresult_i;
@@ -30,10 +31,18 @@ end
 
 // Write Data   
 always@(posedge clk_i) begin
-    WB_o <= WB_i;
-    ReadMem_o <= ReadMem_i;
-    ALUresult_o <= ALUresult_i;
-    RegRD_o <= RegRD_i;
+    if (stall_i) begin
+        WB_o <= WB_i;
+        ReadMem_o <= ReadMem_i;
+        ALUresult_o <= ALUresult_i;
+        RegRD_o <= RegRD_i;
+    end
+    else begin
+        WB_o <= WB_i;
+        ReadMem_o <= ReadMem_i;
+        ALUresult_o <= ALUresult_i;
+        RegRD_o <= RegRD_i;
+    end
 end
 
 endmodule // MEM_WB

@@ -1,6 +1,7 @@
 module ID_EX
 (
     clk_i,
+    stall_i,
     WB_i,
     M_i,
     EX_i,
@@ -17,7 +18,7 @@ module ID_EX
     inst_o
 );
 
-input               clk_i;
+input               clk_i, stall_i;
 input       [1:0]   WB_i, M_i;
 input       [3:0]   EX_i;
 input       [31:0]  data1_i, data2_i, ext_i;
@@ -39,13 +40,24 @@ initial begin
 end
 
 always@(posedge clk_i) begin
-    WB_o <= WB_i;
-    M_o <= M_i;
-    EX_o <= EX_i;
-    data1_o <= data1_i;
-    data2_o <= data2_i;
-    ext_o <= ext_i;
-    inst_o <= inst_i;
+    if (stall_i) begin
+        WB_o <= WB_o;
+        M_o <= M_o;
+        EX_o <= EX_o;
+        data1_o <= data1_o;
+        data2_o <= data2_o;
+        ext_o <= ext_o;
+        inst_o <= inst_o;
+    end
+    else begin
+        WB_o <= WB_i;
+        M_o <= M_i;
+        EX_o <= EX_i;
+        data1_o <= data1_i;
+        data2_o <= data2_i;
+        ext_o <= ext_i;
+        inst_o <= inst_i;
+    end
 end
 
 endmodule
