@@ -37,7 +37,9 @@ reg		[1:0]		state;
 assign	ack_o = ack;
 assign	addr = addr_i>>5;
 assign	data_o = data;
-
+initial begin
+state <= STATE_IDLE;
+end
 //Controller 
 always@(posedge clk_i) begin
 	if(~rst_i) begin
