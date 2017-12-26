@@ -106,6 +106,7 @@ MUX32 Mux_Jump(
 
 IF_ID IF_ID(
     .clk_i      (clk_i),
+    .stall_i    (stall),
     .pc_i       (next_pc),
     .inst_i     (IF_inst),
     .hazard_i   (hazard),
@@ -173,6 +174,7 @@ MUX32 Mux_Hazard_Control(
 
 ID_EX ID_EX(
     .clk_i      (clk_i),
+    .stall_i    (stall),
     .WB_i       (ctrl_or_nop[1:0]),
     .M_i        (ctrl_or_nop[3:2]),
     .EX_i       (ctrl_or_nop[7:4]),
@@ -236,6 +238,7 @@ ALU ALU(
 
 EX_MEM EX_MEM(
     .clk_i      (clk_i),
+    .stall_i    (stall),
     .WB_i       (EX_wb),
     .M_i        (EX_m),
     .ALUresult_i(ALU_res),
@@ -252,6 +255,7 @@ EX_MEM EX_MEM(
 
 MEM_WB MEM_WB(
     .clk_i      (clk_i),
+    .stall_i    (stall),
     .WB_i       (MEM_wb),
     .ReadMem_i  (MEM_data),
     .ALUresult_i(MEM_res),

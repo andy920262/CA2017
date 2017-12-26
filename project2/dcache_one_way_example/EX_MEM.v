@@ -1,5 +1,6 @@
 module EX_MEM(
     clk_i,
+    stall_i,
     WB_i,
     M_i,
     ALUresult_i,
@@ -13,7 +14,7 @@ module EX_MEM(
 );
 
 // port
-input           clk_i;
+input           clk_i, stall_i;
 input   [1:0]   WB_i;
 input   [1:0]   M_i;
 input   [31:0]  ALUresult_i;
@@ -34,11 +35,20 @@ initial begin
 end
 
 always@(posedge clk_i) begin
-    WB_o <= WB_i;
-    M_o <= M_i;
-    ALUresult_o <= ALUresult_i;
-    WriteData_o <= WriteData_i;
-    RegDst_o <= RegDst_i;
+    if (stall_i) begin
+        WB_o <= WB_o;
+        M_o <= M_o;
+        ALUresult_o <= ALUresult_o;
+        WriteData_o <= WriteData_o;
+        RegDst_o <= RegDst_o;
+    end
+    else begin
+        WB_o <= WB_i;
+        M_o <= M_i;
+        ALUresult_o <= ALUresult_i;
+        WriteData_o <= WriteData_i;
+        RegDst_o <= RegDst_i;
+    end
 end
 
 endmodule // EX_MEM
