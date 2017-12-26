@@ -4,17 +4,17 @@ module PC
     rst_i,
 	start_i,
 	stall_i,
-	pcEnable_i,
+	hazard_i,
 	pc_i,
 	pc_o
 );
 
 // Interface
-input				   clk_i;
-input				   rst_i;
-input				   start_i;
-input				   stall_i;
-input          pcEnable_i;
+input				clk_i;
+input				rst_i;
+input				start_i;
+input				stall_i;
+input				hazard_i;
 input	[31:0]		pc_i;
 output	[31:0]		pc_o;
 
@@ -28,11 +28,10 @@ always@(posedge clk_i or negedge rst_i) begin
     else begin
     	if(stall_i) begin
     	end
-    	else if(start_i)	begin
+    	else if(start_i && !hazard_i)
 			pc_o <= pc_i;
-    	end
     	else
-    		pc_o <= 32'b0;
+    		pc_o <= pc_o;
     end
 end
 

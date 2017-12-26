@@ -46,6 +46,8 @@ Data_Memory Data_Memory
 );
   
 initial begin
+	$dumpfile("Sim.vcd");
+    $dumpvars;
 	counter = 1;
 	
 	// initialize instruction memory (2KB)
