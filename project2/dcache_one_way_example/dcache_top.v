@@ -7,15 +7,15 @@ module dcache_top
 	
 	// to Data Memory interface		
 	mem_data_i, 
-	mem_ack_i, 	
+	mem_ack_i,	
 	mem_data_o, 
-	mem_addr_o, 	
+	mem_addr_o,		
 	mem_enable_o, 
 	mem_write_o, 
 	
 	// to CPU interface	
 	p1_data_i, 
-	p1_addr_i, 	
+	p1_addr_i,	
 	p1_MemRead_i, 
 	p1_MemWrite_i, 
 	p1_data_o, 
@@ -34,7 +34,7 @@ input	[256-1:0]	mem_data_i;
 input				mem_ack_i; 
 	
 output	[256-1:0]	mem_data_o; 
-output	[32-1:0]	mem_addr_o; 	
+output	[32-1:0]	mem_addr_o;		
 output				mem_enable_o; 
 output				mem_write_o; 
 	
@@ -42,7 +42,7 @@ output				mem_write_o;
 // to core interface
 //
 input	[32-1:0]	p1_data_i; 
-input	[32-1:0]	p1_addr_i; 	
+input	[32-1:0]	p1_addr_i;	
 input				p1_MemRead_i; 
 input				p1_MemWrite_i; 
 
@@ -66,7 +66,7 @@ wire				sram_valid;
 wire				sram_dirty;
 
 // controller
-parameter 			STATE_IDLE			= 3'h0,
+parameter			STATE_IDLE			= 3'h0,
 					STATE_READMISS		= 3'h1,
 					STATE_READMISSOK	= 3'h2,
 					STATE_WRITEBACK		= 3'h3,
@@ -91,7 +91,7 @@ wire				p1_req;
 reg		[31:0]		p1_data;
 
 // project1 interface
-assign 	p1_req		= p1_MemRead_i | p1_MemWrite_i;
+assign	p1_req		= p1_MemRead_i | p1_MemWrite_i;
 assign	p1_offset	= p1_addr_i[4:0];
 assign	p1_index	= p1_addr_i[9:5];
 assign	p1_tag		= p1_addr_i[31:10];
@@ -119,16 +119,38 @@ assign	cache_dirty	= write_hit;
 
 // tag comparator
 //!!! add you code here!  (hit=...?,  r_hit_data=...?)
-	
+assign hit = sram_valid && (sram_tag == p1_tag)
+assign r_hit_data = sram_cache_data
+
 // read data :  256-bit to 32-bit
 always@(p1_offset or r_hit_data) begin
 	//!!! add you code here! (p1_data=...?)
+    if (hit) begin
+        p1_data =   (p1_offset == 0 ) ? r_hit_data[ 31:  0] :
+                    (p1_offset == 4 ) ? r_hit_data[ 63: 32] :
+                    (p1_offset == 8 ) ? r_hit_data[ 95: 64] :
+                    (p1_offset == 12) ? r_hit_data[127: 96] :
+                    (p1_offset == 16) ? r_hit_data[159:128] :
+                    (p1_offset == 20) ? r_hit_data[191:160] :
+                    (p1_offset == 24) ? r_hit_data[223:192] :
+                    (p1_offset == 28) ? r_hit_data[255:224];
+    end
+    else
+        p1_data = 0;
 end
 
 
 // write data :  32-bit to 256-bit
 always@(p1_offset or r_hit_data or p1_data_i) begin
 	//!!! add you code here! (w_hit_data=...?)
+	w_hit_data = { (p1_offset == 28) ? p1_data_i : r_hit_data[255:224],
+                   (p1_offset == 24) ? p1_data_i : r_hit_data[223:192],
+                   (p1_offset == 20) ? p1_data_i : r_hit_data[191:160],
+                   (p1_offset == 16) ? p1_data_i : r_hit_data[159:128],
+                   (p1_offset == 12) ? p1_data_i : r_hit_data[127: 96],
+                   (p1_offset == 8 ) ? p1_data_i : r_hit_data[ 95: 64],
+                   (p1_offset == 4 ) ? p1_data_i : r_hit_data[ 63: 32],
+                   (p1_offset == 0 ) ? p1_data_i : r_hit_data[ 31:  0]};
 end
 
 
